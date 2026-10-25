@@ -1,44 +1,70 @@
 ---
 name: text-widgets
 description: >-
-  Use when an AI agent or bot should show status, progress, streaks, a timer,
-  a dashboard, or a summary as a compact visual in chat instead of prose:
-  progress bars, status strips, cards, heatmaps, receipts, streak gardens,
-  boss bars, leaderboards, and timelines.
+  Use when an AI agent or bot should show status, queues, progress, streaks, a
+  timer, a dashboard, or summary cards in chat using compact monospace
+  box-drawing text widgets (≤46 chars wide, paired with clickable links below).
 ---
 # Text Widgets
 
 Chat UIs show text, images, files, and choice buttons—not live HTML widgets. Draw widgets in monospace text instead, and send a fresh block on each update.
 
-## Rules
+## Core Rules
 - Wrap box-drawing and aligned widgets in a ```fenced code block``` so monospace alignment holds across desktop and mobile.
-- Keep each widget to 3–8 lines. Send one widget per message unless combining a top status strip with 2–3 cards.
+- **Hard width limit: ≤ 46 characters per line** inside code blocks (counting emojis as 2 chars). Chat bubbles sit in a narrow centered column (~52 chars wide), so anything wider clips on the right. Wrap details across 2–3 short lines inside a card instead of making wide rows.
+- Keep each widget to 3–10 lines. Send one widget per message unless combining a top status strip with 2–3 cards or a queue receipt.
 - Use only real numbers from a tool, file, or user input. Never invent progress or metrics.
-- Below the widget, add at most one sentence of plain prose.
-- Pair interactive flows with native choice buttons (2–4 short options) where supported so the user taps instead of typing commands.
-- Percent bars are 20 cells wide: `filled = round(pct / 5)` of `▓`, remainder `░`.
+- **Clickable links**: Links inside ```code blocks``` are not clickable. Whenever a widget names tickets, PRs, threads, or pages, put a compact clickable markdown links line immediately below the code block.
+- **When to pair with a full-width Page/Canvas**: When a queue has many rows or wide multi-column details (e.g., 20+ open tickets with summaries, owners, staleness, and actions), render the high-level **Status strip + Top Action Cards + Backlog Breakdown** as Text Widgets in chat, and put the full filterable table on a full-width Page/Canvas.
+- Pair interactive decisions with native choice buttons (2–4 short options) so the user taps instead of typing commands.
+- Percent bars are 16–20 cells wide: `filled = round(pct / 5)` of `▓`, remainder `░`.
 
-## Widget Library
+## Widget Library (all ≤ 46 chars wide)
+
+**Status strip** (fleet or queue counts at a glance)
+```
+🤖 24 bots · ⏱ 9 on · ⏸ 2 · ❗ 1 urgent
+📥 0 unowned · 🔥 6 stale · 📋 18 open
+```
+
+**Action / Decision Card** (ticket, blocker, or bot needing a decision)
+```
+┌ #1 Acme Billing Cutoff ───── 🔴 4h
+│ Verify webhook cert + deploy v2.4
+│ (API-104) & 3 env keys (OPS-118)
+│ → Verify cert; hand OPS-118 to Alex
+└────────────────────────────────────
+```
+Badges: `🟢 healthy/done` · `🟡 waiting/stale` · `🔴 urgent/critical` · `⚪ on demand`
+
+**Queue / Backlog Breakdown** (grouped counts + staleness bars)
+```
+───── OPEN QUEUE BY OWNER & AGE ─────
+Alex     ▓▓▓▓▓▓░░░░ 12 open · 4 >7d
+Sam      ▓▓▓▓▓▓░░░░ 13 open ·reassgn
+Jordan   ▓▓▓▓░░░░░░  8 open · 1 >7d
+Taylor   ▓▓▓░░░░░░░  6 open · 2 >7d
+Casey    ▓▓░░░░░░░░  4 open · 0 >7d
+─────────────────────────────────────
+```
+
+**Compact Queue Receipt** (numbered priority list that never clips)
+```
+───── NEXT UP · Sun 25 Oct 16:00 ────
+1. API-104      🟡 10m · retry webhook
+2. Auth Upgrade 🟡 2d  · 2 role scopes
+3. OPS-118      🟡 5d  · billing sync
+4. Portal SSO   🟡 5d  · filter rule
+5. SUP-309      🟡 6d  · invoice export
+✔ Done: cert · #82 · staging · docs
+─────────────────────────────────────
+```
 
 **Progress bar**
 ```
 🍅 FOCUS 2/4 · API schema migration
-▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░  55% · 11 min left
+▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░ 55% · 11m left
 ```
-
-**Status strip** (fleet or system counts at a glance)
-```
-🤖 24 bots · ⏱ 9 routines on · ⏸ 2 paused · 💤 3 idle · ❗ 1 needs you
-```
-
-**Card** (single service, bot, or job)
-```
-┌ Triage Bot ───────────── 🟢 healthy
-│ inbound support queue
-│ ⏱ weekdays 08:30 · last run 2h ago
-└───────────────────────────────────
-```
-Badges: `🟢 healthy` · `🟡 paused/idle 7+ days` · `🔴 erroring` · `⚪ on demand`
 
 **Heatmap** (weekly or monthly activity)
 ```
@@ -48,15 +74,6 @@ wk2 🟩 🟩 🟩 🟩 🟨
 ```
 Legend: `🟩 good` · `🟨 partial` · `⬜ none` · `🟥 missed`
 
-**Receipt** (end of a focus block, deploy, or day)
-```
-───── RECEIPT · Sun 25 Oct ─────
- planned   auth token rotation
- done      ✔ patch · ✔ integration test
- focus     50 min
-────────────────────────────────
-```
-
 **Garden / streak** (habits that build over time)
 ```
 🍅🍅🍅🥀🍅🍅   streak 🔥2
@@ -65,14 +82,7 @@ Legend: `🍅 done` · `🥀 skipped` · `🌱 in progress`
 
 **Boss bar** (large milestone or backlog epic chipped away)
 ```
-👾 EPIC-402 ▓▓▓░░░░░░░░░░░░░░░░░ 15% HP · 3 tasks left
-```
-
-**Leaderboard / ranked list**
-```
-1. Inbox Triage   ▓▓▓▓▓▓▓▓ 41 runs
-2. Health Checks  ▓▓▓▓▓    26
-3. Release Bot    ▓▓▓      14
+👾 EPIC-402 ▓▓▓░░░░░░░░░░░░░ 15% · 3 left
 ```
 
 **Timeline**
@@ -83,6 +93,7 @@ Legend: `🍅 done` · `🥀 skipped` · `🌱 in progress`
 ```
 
 ## Steps
-1. Pick the smallest widget that answers the user's question.
-2. Populate it strictly from verified state.
-3. Send the widget, followed by at most one sentence and optional tap-to-act choice buttons.
+1. Pick the smallest widget combination that answers the user's question (e.g., Status strip + Decision Cards + Backlog Breakdown).
+2. Keep every code-block line ≤ 46 characters so it never clips inside the chat column.
+3. Populate strictly from verified state.
+4. Put clickable markdown links (and a full-width Page/Canvas link when applicable) on one compact line right under the widget, followed by optional choice buttons.
